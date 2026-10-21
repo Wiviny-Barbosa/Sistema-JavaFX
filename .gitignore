@@ -1,0 +1,16 @@
+# Saída do Maven
+target/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Sistema
+Thumbs.db
+.DS_Store
+
+# Material do professor e instruções locais (não versionados)
+docs/diagrama.pdf
+docs/enunciado.pdf
+CLAUDE.md
