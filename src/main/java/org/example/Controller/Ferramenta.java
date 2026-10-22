@@ -19,4 +19,12 @@ public interface Ferramenta {
     void aoSoltarMouse(MouseEvent evento, EditorContext contexto);
 
     void aoClicar(MouseEvent evento, EditorContext contexto);
+
+    /**
+     * Chamado pelo EditorContext logo antes de trocar para outra ferramenta, para
+     * a ferramenta concluir o que estiver pela metade (a Linha Livre fecha o
+     * polígono). Por padrão não faz nada, então só quem precisa sobrescreve.
+     */
+    default void aoDesativar(EditorContext contexto) {
+    }
 }

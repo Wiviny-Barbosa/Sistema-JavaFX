@@ -120,11 +120,15 @@ public class EditorContext {
         return ferramentaAtual;
     }
 
-    /** Troca o estado. O que estava pela metade na ferramenta anterior é descartado. */
+    /**
+     * Troca o estado. A ferramenta anterior pode concluir o que estava fazendo
+     * (aoDesativar); o que ainda sobrar pela metade é descartado.
+     */
     public void setFerramentaAtual(Ferramenta ferramenta) {
         if (ferramenta == null) {
             throw new IllegalArgumentException("A ferramenta não pode ser nula.");
         }
+        ferramentaAtual.aoDesativar(this);
         this.ferramentaAtual = ferramenta;
         this.formaEmAndamento = null;
         this.caixaSelecao = null;

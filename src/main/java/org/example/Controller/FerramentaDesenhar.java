@@ -8,8 +8,8 @@ import org.example.Models.Ponto;
 
 /**
  * Ferramenta "Linha Livre": cada clique adiciona um vértice ao polígono.
- * O polígono é fechado com duplo clique, clique direito ou clicando
- * perto do primeiro ponto.
+ * O polígono é fechado com duplo clique, clique direito, clicando
+ * perto do primeiro ponto ou trocando de ferramenta.
  */
 public class FerramentaDesenhar implements Ferramenta {
 
@@ -57,6 +57,19 @@ public class FerramentaDesenhar implements Ferramenta {
 
         emAndamento.adicionarPonto(novo);
         contexto.requestRedraw();
+    }
+
+    /**
+     * Trocar de ferramenta sem fechar o polígono não pode fazer o desenho sumir:
+     * com 3 pontos ou mais ele é fechado como se o usuário tivesse dado duplo clique.
+     * Com menos de 3 não dá para formar um polígono, e os pontos são descartados.
+     */
+    @Override
+    public void aoDesativar(EditorContext contexto) {
+        FormaGeometrica emAndamento = contexto.getFormaEmAndamento();
+        if (emAndamento != null && emAndamento.getQuantidadePontos() >= Poligono.MINIMO_PONTOS) {
+            finalizarPoligono(contexto);
+        }
     }
 
     /**

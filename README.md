@@ -33,7 +33,7 @@ Outros comandos úteis:
 
 ```bash
 mvn compile      # só compila
-mvn test         # roda os 119 testes automáticos (JUnit 5)
+mvn test         # roda os 120 testes automáticos (JUnit 5)
 ```
 
 **No IntelliJ IDEA:** abra a pasta como projeto Maven e, na janela *Maven*, execute
@@ -49,7 +49,7 @@ A janela tem a **barra lateral** à esquerda, o **canvas** no centro e a **barra
 
 | Ferramenta | Como usar |
 |---|---|
-| **Linha Livre** | Cada clique adiciona um vértice. Fecha o polígono com duplo clique, clique direito ou clicando perto do primeiro ponto. |
+| **Linha Livre** | Cada clique adiciona um vértice. Fecha o polígono com duplo clique, clique direito ou clicando perto do primeiro ponto. Trocar de ferramenta com 3 ou mais pontos também fecha o polígono (com menos, os pontos são descartados). |
 | **Selecionar** | Clique seleciona; **Shift + clique** adiciona/remove da seleção; arrastar move; arrastar no vazio faz uma caixa de seleção. |
 | **Escalar / Rotacionar / Cisalhar** | Arraste com a seleção ativa. As formas se transformam em torno do centroide da seleção. |
 | **Excluir** | Clique numa forma para apagá-la (apaga o grupo inteiro, se ela estiver agrupada). |
@@ -199,7 +199,7 @@ arquivo propositalmente corrompido (`arquivo-corrompido.json`) para testar esses
 
 ## Testes
 
-`mvn test` executa 119 testes JUnit 5:
+`mvn test` executa 120 testes JUnit 5:
 
 | Classe de teste | O que verifica |
 |---|---|

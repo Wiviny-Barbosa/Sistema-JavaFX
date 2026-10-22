@@ -65,6 +65,24 @@ class FerramentasTest {
     }
 
     @Test
+    void trocarDeFerramentaFechaPoligonoComPontosSuficientes() {
+        contexto.setFerramentaAtual(new FerramentaDesenhar());
+        contexto.aoClicar(clicar(0, 0));
+        contexto.aoClicar(clicar(100, 0));
+        contexto.aoClicar(clicar(100, 100));
+        // O usuário não fechou o polígono e foi direto para Selecionar
+        contexto.setFerramentaAtual(new FerramentaSelecionar());
+
+        assertEquals(1, contexto.getFormas().size(), "o desenho não pode sumir");
+        assertEquals(3, contexto.getFormas().get(0).getQuantidadePontos());
+        assertNull(contexto.getFormaEmAndamento());
+        assertTrue(avisos.isEmpty());
+
+        contexto.desfazer();
+        assertTrue(contexto.getFormas().isEmpty());
+    }
+
+    @Test
     void posicaoDoMouseParaABarraDeStatus() {
         assertNull(contexto.getPosicaoMouse());
         contexto.aoMoverMouse(evento(javafx.scene.input.MouseEvent.MOUSE_MOVED, 120, 45,
