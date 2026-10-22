@@ -48,12 +48,4 @@ final class EventosFalsos {
     static MouseEvent cliqueDireito(double x, double y) {
         return evento(MouseEvent.MOUSE_CLICKED, x, y, MouseButton.SECONDARY, 1, false);
     }
-
-    /** O "clique" que o JavaFX gera ao soltar o botão depois de arrastar (stillSincePress = false). */
-    static MouseEvent cliqueDepoisDeArrastar(double x, double y) {
-        return new MouseEvent(MouseEvent.MOUSE_CLICKED, x, y, x, y, MouseButton.PRIMARY, 1,
-                false, false, false, false,
-                false, false, false,
-                false, false, false, null);
-    }
 }

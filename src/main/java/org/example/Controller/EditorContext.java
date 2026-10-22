@@ -91,11 +91,6 @@ public class EditorContext {
         ferramentaAtual.aoClicar(evento, this);
     }
 
-    /** Tecla Enter: também é só repassada para a ferramenta ativa. */
-    public void aoConfirmar() {
-        ferramentaAtual.aoConfirmar(this);
-    }
-
     // ------------------------------------------------------------------
     // Posição do mouse (para a barra de status; não depende da ferramenta)
     // ------------------------------------------------------------------
