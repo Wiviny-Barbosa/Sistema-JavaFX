@@ -19,4 +19,11 @@ public interface Ferramenta {
     void aoSoltarMouse(MouseEvent evento, EditorContext contexto);
 
     void aoClicar(MouseEvent evento, EditorContext contexto);
+
+    /**
+     * Tecla Enter: confirma o que a ferramenta estiver fazendo (a Linha Livre
+     * fecha o polígono). Por padrão não faz nada, então só quem usa sobrescreve.
+     */
+    default void aoConfirmar(EditorContext contexto) {
+    }
 }

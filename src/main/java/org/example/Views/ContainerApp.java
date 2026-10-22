@@ -26,6 +26,7 @@ import org.example.Controller.EditorContext;
 import org.example.Controller.PersistenciaJson;
 import org.example.Models.Circulo;
 import org.example.Models.FormaGeometrica;
+import org.example.Models.Poligono;
 import org.example.Models.Ponto;
 
 /**
@@ -138,7 +139,8 @@ public class ContainerApp extends Application {
 
     /**
      * Atalhos de teclado: Ctrl+Z desfaz, Ctrl+Y (ou Ctrl+Shift+Z) refaz,
-     * Delete exclui a seleção, Ctrl+S salva e Ctrl+O carrega.
+     * Delete exclui a seleção, Ctrl+S salva, Ctrl+O carrega e Enter confirma
+     * a ferramenta ativa.
      */
     private void configurarAtalhos(Scene cena) {
         cena.getAccelerators().put(
@@ -153,6 +155,8 @@ public class ContainerApp extends Application {
                 new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN),
                 contexto::refazer);
         cena.getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), contexto::excluirSelecionados);
+        // Enter vai para a ferramenta ativa (na Linha Livre, fecha e preenche o polígono)
+        cena.getAccelerators().put(new KeyCodeCombination(KeyCode.ENTER), contexto::aoConfirmar);
     }
 
     private void mostrarAviso(String mensagem) {
@@ -296,7 +300,9 @@ public class ContainerApp extends Application {
 
         // Forma ainda sendo criada (polígono pela metade, quadrado sendo arrastado...)
         FormaGeometrica emAndamento = contexto.getFormaEmAndamento();
-        if (emAndamento != null) {
+        if (emAndamento instanceof Poligono) {
+            desenharLinhaEmAndamento(gc, emAndamento);
+        } else if (emAndamento != null) {
             desenharForma(emAndamento, false);
             desenharVertices(gc, emAndamento);
         }
@@ -398,6 +404,29 @@ public class ContainerApp extends Application {
 
         if (selecionada) {
             desenharVertices(gc, forma);
+        }
+    }
+
+    /**
+     * Linha Livre ainda aberta: só a linha, sem preenchimento (o preenchimento vem
+     * ao fechar com Enter). O primeiro ponto fica marcado, porque clicar perto
+     * dele também fecha o polígono.
+     */
+    private void desenharLinhaEmAndamento(GraphicsContext gc, FormaGeometrica forma) {
+        List<Ponto> pontos = forma.getPontos();
+        double[] xs = new double[pontos.size()];
+        double[] ys = new double[pontos.size()];
+        for (int i = 0; i < pontos.size(); i++) {
+            xs[i] = pontos.get(i).getX();
+            ys[i] = pontos.get(i).getY();
+        }
+        gc.setStroke(Color.web(forma.getCorBordaHex()));
+        gc.setLineWidth(forma.getEspessuraBorda());
+        gc.strokePolyline(xs, ys, pontos.size());
+        if (!pontos.isEmpty()) {
+            Ponto primeiro = pontos.get(0);
+            gc.setFill(COR_VERTICE);
+            gc.fillOval(primeiro.getX() - RAIO_VERTICE, primeiro.getY() - RAIO_VERTICE, 2 * RAIO_VERTICE, 2 * RAIO_VERTICE);
         }
     }
 

@@ -135,6 +135,69 @@ class FerramentasTest {
     }
 
     @Test
+    void arrastarDesenhaALinhaSeguindoOMouse() {
+        contexto.setFerramentaAtual(new FerramentaDesenhar());
+        contexto.aoPressionarMouse(pressionar(0, 0));
+        contexto.aoArrastarMouse(arrastar(50, 0));
+        contexto.aoArrastarMouse(arrastar(52, 0)); // a menos de 4 px do último: ignorado
+        contexto.aoArrastarMouse(arrastar(50, 50));
+        contexto.aoSoltarMouse(soltar(50, 50));
+        contexto.aoClicar(cliqueDepoisDeArrastar(50, 50)); // não pode virar mais um ponto
+
+        List<Ponto> pontos = contexto.getFormaEmAndamento().getPontos();
+        assertEquals(3, pontos.size());
+        assertEquals(0, pontos.get(0).getX(), DELTA);
+        assertEquals(50, pontos.get(1).getX(), DELTA);
+        assertEquals(50, pontos.get(2).getY(), DELTA);
+        assertTrue(contexto.getFormas().isEmpty(), "a linha só vira forma ao fechar");
+    }
+
+    @Test
+    void enterFechaEPreencheALinha() {
+        contexto.setFerramentaAtual(new FerramentaDesenhar());
+        contexto.aoPressionarMouse(pressionar(0, 0));
+        contexto.aoArrastarMouse(arrastar(100, 0));
+        contexto.aoSoltarMouse(soltar(100, 0));
+        // Soltar e arrastar de novo continua a mesma linha
+        contexto.aoPressionarMouse(pressionar(100, 0));
+        contexto.aoArrastarMouse(arrastar(100, 100));
+        contexto.aoSoltarMouse(soltar(100, 100));
+
+        contexto.aoConfirmar();
+
+        assertEquals(1, contexto.getFormas().size());
+        assertEquals(3, contexto.getFormas().get(0).getQuantidadePontos());
+        assertEquals(5000, contexto.getFormas().get(0).calcularArea(), DELTA);
+        assertNull(contexto.getFormaEmAndamento());
+
+        contexto.desfazer();
+        assertTrue(contexto.getFormas().isEmpty());
+    }
+
+    @Test
+    void enterComMenosDe3PontosAvisaEContinuaDesenhando() {
+        contexto.setFerramentaAtual(new FerramentaDesenhar());
+        contexto.aoPressionarMouse(pressionar(0, 0));
+        contexto.aoArrastarMouse(arrastar(100, 0));
+        contexto.aoSoltarMouse(soltar(100, 0));
+
+        contexto.aoConfirmar();
+
+        assertTrue(contexto.getFormas().isEmpty());
+        assertEquals(1, avisos.size());
+        assertEquals(2, contexto.getFormaEmAndamento().getQuantidadePontos());
+    }
+
+    @Test
+    void enterSemNadaParaConfirmarNaoFazNada() {
+        contexto.aoConfirmar(); // ferramenta Selecionar
+        contexto.setFerramentaAtual(new FerramentaDesenhar());
+        contexto.aoConfirmar(); // Linha Livre sem linha começada
+        assertTrue(contexto.getFormas().isEmpty());
+        assertTrue(avisos.isEmpty());
+    }
+
+    @Test
     void snapArredondaOsPontosParaAGrade() {
         contexto.setGridSnappingHabilitado(true);
         contexto.setFerramentaAtual(new FerramentaDesenhar());
