@@ -77,6 +77,27 @@ class TransformacoesTest {
     }
 
     @Test
+    void cisalharCirculoComAFerramentaViraElipse() {
+        Circulo c = new Circulo(new Ponto(100, 100), 40);
+        contexto.adicionarForma(c);
+        contexto.setFerramentaAtual(new FerramentaTransformar(ModoFerramenta.CISALHAR));
+
+        contexto.aoPressionarMouse(pressionar(100, 100)); // pressiona no círculo: ele vira a seleção
+        contexto.aoArrastarMouse(arrastar(150, 100));     // 50 px => shx = 0,5
+        contexto.aoSoltarMouse(soltar(150, 100));
+
+        assertTrue(c.isDeformado());
+        assertArrayEquals(new double[] {1, 0.5, 0, 1}, c.getDeformacao(), DELTA);
+        assertEquals(100, c.getCentro().getX(), DELTA); // cisalha em torno do próprio centro
+        // O topo do círculo (100, 60) foi para (100 + 0,5*(-40), 60) = (80, 60)
+        assertTrue(c.contemPonto(80, 61));
+        assertFalse(c.contemPonto(100, 59));
+
+        contexto.desfazer();
+        assertFalse(((Circulo) contexto.getFormas().get(0)).isDeformado());
+    }
+
+    @Test
     void pressionarNumaFormaNaoSelecionadaPassaASelecionarEla() {
         Quadrado q = new Quadrado(new Ponto(100, 100), 50);
         contexto.adicionarForma(q);

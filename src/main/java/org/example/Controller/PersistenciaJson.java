@@ -31,6 +31,7 @@ import org.example.Models.Quadrado;
  *   "canvas": { "largura": 985.0, "altura": 770.0, "gridSnappingHabilitado": false, "tamanhoGrade": 20.0 },
  *   "formas": [
  *     { "tipo": "Circulo", "pontos": [ {"x": 100.0, "y": 80.0} ], "raio": 40.0,
+ *       "deformacao": [1.0, 0.0, 0.0, 1.0],
  *       "corPreenchimentoHex": "#D3D3D3", "corBordaHex": "#000000", "espessuraBorda": 1.0,
  *       "groupId": null },
  *     ...
@@ -101,7 +102,14 @@ public class PersistenciaJson {
         json.add("pontos", pontos);
 
         if (forma instanceof Circulo) {
-            json.addProperty("raio", ((Circulo) forma).getRaio());
+            Circulo circulo = (Circulo) forma;
+            json.addProperty("raio", circulo.getRaio());
+            // Matriz {m00, m01, m10, m11} do cisalhamento/rotação do círculo
+            JsonArray deformacao = new JsonArray();
+            for (double valor : circulo.getDeformacao()) {
+                deformacao.add(valor);
+            }
+            json.add("deformacao", deformacao);
         }
 
         json.addProperty("corPreenchimentoHex", forma.getCorPreenchimentoHex());
@@ -191,7 +199,9 @@ public class PersistenciaJson {
                 if (pontos.size() != 1) {
                     throw new ArquivoInvalidoException("o círculo deveria ter só o ponto central.");
                 }
-                yield new Circulo(pontos.get(0), lerNumero(json, "raio"));
+                Circulo circulo = new Circulo(pontos.get(0), lerNumero(json, "raio"));
+                lerDeformacao(json, circulo);
+                yield circulo;
             }
             default -> throw new ArquivoInvalidoException("tipo de forma desconhecido: \"" + tipo + "\".");
         };
@@ -220,6 +230,31 @@ public class PersistenciaJson {
             pontos.add(new Ponto(lerNumero(p.getAsJsonObject(), "x"), lerNumero(p.getAsJsonObject(), "y")));
         }
         return pontos;
+    }
+
+    /**
+     * "deformacao" é opcional: arquivos salvos antes de o círculo poder ser
+     * cisalhado não têm o campo, e o círculo fica sem deformação.
+     */
+    private void lerDeformacao(JsonObject json, Circulo circulo) throws ArquivoInvalidoException {
+        JsonElement elemento = json.get("deformacao");
+        if (elemento == null || elemento.isJsonNull()) {
+            return;
+        }
+        if (!elemento.isJsonArray() || elemento.getAsJsonArray().size() != 4) {
+            throw new ArquivoInvalidoException("o campo \"deformacao\" deveria ter 4 números.");
+        }
+        double[] matriz = new double[4];
+        JsonArray valores = elemento.getAsJsonArray();
+        for (int i = 0; i < 4; i++) {
+            JsonElement valor = valores.get(i);
+            if (!valor.isJsonPrimitive() || !valor.getAsJsonPrimitive().isNumber()) {
+                throw new ArquivoInvalidoException("o campo \"deformacao\" deveria ter 4 números.");
+            }
+            matriz[i] = valor.getAsDouble();
+        }
+        // setDeformacao confere valores finitos e se a forma não foi achatada
+        circulo.setDeformacao(matriz);
     }
 
     private boolean lerGridSnapping(JsonObject raiz) throws ArquivoInvalidoException {

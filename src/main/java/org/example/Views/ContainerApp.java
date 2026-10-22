@@ -44,6 +44,9 @@ public class ContainerApp extends Application {
     private static final double RAIO_VERTICE = 3;
     private static final double MARGEM_CONTORNO_GRUPO = 8;
 
+    // Quantos pontos formam a borda de um círculo cisalhado (elipse): 96 já fica liso
+    private static final int PONTOS_CONTORNO_CIRCULO = 96;
+
     private static final Color COR_GRADE = Color.web("#E6E6E6");
     private static final Color COR_CAIXA_SELECAO = Color.web("#1E78D7");
 
@@ -321,13 +324,15 @@ public class ContainerApp extends Application {
             }
             double[] limites = limitesPorGrupo.computeIfAbsent(forma.getGroupId(),
                     id -> new double[] {Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE});
-            // O círculo ocupa raio para cada lado do centro; os demais, só os vértices
-            double folga = (forma instanceof Circulo) ? ((Circulo) forma).getRaio() : 0;
-            for (Ponto p : forma.getPontos()) {
-                limites[0] = Math.min(limites[0], p.getX() - folga);
-                limites[1] = Math.min(limites[1], p.getY() - folga);
-                limites[2] = Math.max(limites[2], p.getX() + folga);
-                limites[3] = Math.max(limites[3], p.getY() + folga);
+            // O círculo (talvez cisalhado em elipse) usa os pontos da borda; os demais, os vértices
+            List<Ponto> pontos = (forma instanceof Circulo)
+                    ? ((Circulo) forma).getContorno(PONTOS_CONTORNO_CIRCULO)
+                    : forma.getPontos();
+            for (Ponto p : pontos) {
+                limites[0] = Math.min(limites[0], p.getX());
+                limites[1] = Math.min(limites[1], p.getY());
+                limites[2] = Math.max(limites[2], p.getX());
+                limites[3] = Math.max(limites[3], p.getY());
             }
         }
 
@@ -364,15 +369,18 @@ public class ContainerApp extends Application {
             gc.setLineWidth(forma.getEspessuraBorda());
         }
 
-        // O círculo é o único que não é desenhado como polígono
-        if (forma instanceof Circulo) {
+        // O círculo é o único que não é desenhado pelos próprios vértices
+        if (forma instanceof Circulo && !((Circulo) forma).isDeformado()) {
             Circulo circulo = (Circulo) forma;
             Ponto centro = circulo.getCentro();
             double raio = circulo.getRaio();
             gc.fillOval(centro.getX() - raio, centro.getY() - raio, 2 * raio, 2 * raio);
             gc.strokeOval(centro.getX() - raio, centro.getY() - raio, 2 * raio, 2 * raio);
         } else {
-            List<Ponto> pontos = forma.getPontos();
+            // Círculo cisalhado (elipse): desenhado como polígono com muitos pontos na borda
+            List<Ponto> pontos = (forma instanceof Circulo)
+                    ? ((Circulo) forma).getContorno(PONTOS_CONTORNO_CIRCULO)
+                    : forma.getPontos();
             double[] xs = new double[pontos.size()];
             double[] ys = new double[pontos.size()];
             for (int i = 0; i < pontos.size(); i++) {

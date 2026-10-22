@@ -108,6 +108,23 @@ class PersistenciaJsonTest {
     }
 
     @Test
+    void circuloCisalhadoVoltaComAMesmaDeformacao() throws Exception {
+        Circulo circulo = new Circulo(new Ponto(100, 100), 30);
+        circulo.cisalhar(0.4, 0);
+        circulo.rotacionar(0.3);
+        contexto.adicionarForma(circulo);
+
+        Path arquivo = pasta.resolve("elipse.json");
+        persistencia.salvar(arquivo, contexto, 800, 600);
+        EditorContext outro = new EditorContext();
+        persistencia.carregar(arquivo, outro);
+
+        Circulo carregado = (Circulo) outro.getFormas().get(0);
+        assertArrayEquals(circulo.getDeformacao(), carregado.getDeformacao(), DELTA);
+        assertEquals(circulo.calcularPerimetro(), carregado.calcularPerimetro(), DELTA);
+    }
+
+    @Test
     void salvarECarregarMarcamComoSalvoECarregarLimpaOHistorico() throws Exception {
         contexto.registrarEstado();
         contexto.adicionarForma(new Circulo(new Ponto(0, 0), 5));
@@ -191,6 +208,14 @@ class PersistenciaJsonTest {
                 + "\"pontos\": [ {\"x\": 1, \"y\": 1} ], \"raio\": 0, \"corPreenchimentoHex\": \"#FFFFFF\", "
                 + "\"corBordaHex\": \"#000000\", \"espessuraBorda\": 1, \"groupId\": null } ] }");
         assertTrue(erro.getMessage().contains("raio"));
+    }
+
+    @Test
+    void circuloComDeformacaoInvalida() throws IOException {
+        ArquivoInvalidoException erro = carregarInvalido("{ \"formas\": [ { \"tipo\": \"Circulo\", "
+                + "\"pontos\": [ {\"x\": 1, \"y\": 1} ], \"raio\": 3, \"deformacao\": [1, 0, 0], "
+                + "\"corPreenchimentoHex\": \"#FFFFFF\", \"corBordaHex\": \"#000000\", \"espessuraBorda\": 1 } ] }");
+        assertTrue(erro.getMessage().contains("deformacao"));
     }
 
     @Test

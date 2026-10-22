@@ -33,7 +33,7 @@ Outros comandos úteis:
 
 ```bash
 mvn compile      # só compila
-mvn test         # roda os 110 testes automáticos (JUnit 5)
+mvn test         # roda os 119 testes automáticos (JUnit 5)
 ```
 
 **No IntelliJ IDEA:** abra a pasta como projeto Maven e, na janela *Maven*, execute
@@ -148,9 +148,12 @@ forma só.
 - **Centroide:** centro de massa do polígono.
 - **Transformações:** translação (soma dx, dy), escala e rotação em torno do centroide,
   cisalhamento `x' = x + shx·y`, `y' = y + shy·x` relativo ao centroide.
-- **Ponto dentro da forma:** *ray casting* para polígonos; distância ≤ raio para o círculo.
-- O círculo guarda o centro em `pontos` e o raio num atributo próprio. Rotacioná-lo ou
-  cisalhá-lo não o altera, pois o modelo centro + raio não representa uma elipse.
+- **Ponto dentro da forma:** *ray casting* para polígonos; para o círculo, desfaz a
+  deformação do ponto e confere se a distância ao centro é ≤ raio.
+- O círculo guarda o centro em `pontos`, o raio num atributo próprio e uma matriz 2×2 de
+  deformação. Cisalhá-lo multiplica essa matriz e o transforma numa elipse, que pode
+  continuar sendo girada e escalada. Área = π·r²·|det|; perímetro da elipse pela
+  aproximação de Ramanujan.
 
 ---
 
@@ -168,6 +171,7 @@ das camadas:
       "tipo": "Circulo",
       "pontos": [ { "x": 180.0, "y": 180.0 } ],
       "raio": 80.0,
+      "deformacao": [ 1.0, 0.0, 0.0, 1.0 ],
       "corPreenchimentoHex": "#4A8080",
       "corBordaHex": "#000000",
       "espessuraBorda": 1.0,
@@ -195,7 +199,7 @@ arquivo propositalmente corrompido (`arquivo-corrompido.json`) para testar esses
 
 ## Testes
 
-`mvn test` executa 110 testes JUnit 5:
+`mvn test` executa 119 testes JUnit 5:
 
 | Classe de teste | O que verifica |
 |---|---|

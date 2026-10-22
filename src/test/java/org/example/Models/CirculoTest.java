@@ -47,13 +47,70 @@ class CirculoTest {
     }
 
     @Test
-    void rotacionarECisalharNaoAlteramOCirculo() {
+    void rotacionarCirculoComumNaoMudaAForma() {
         Circulo c = new Circulo(new Ponto(1, 2), 3);
         c.rotacionar(1.2);
-        c.cisalhar(0.5, 0.5);
+        assertFalse(c.isDeformado());
         assertEquals(1, c.getCentro().getX(), DELTA);
         assertEquals(2, c.getCentro().getY(), DELTA);
-        assertEquals(3, c.getRaio(), DELTA);
+        assertEquals(Math.PI * 9, c.calcularArea(), DELTA);
+        assertEquals(2 * Math.PI * 3, c.calcularPerimetro(), DELTA);
+    }
+
+    @Test
+    void cisalharTransformaOCirculoEmElipse() {
+        Circulo c = new Circulo(new Ponto(0, 0), 10);
+        c.cisalhar(0.5, 0);
+        assertTrue(c.isDeformado());
+        // Mesmo centro e raio; o cisalhamento só muda a forma da borda
+        assertEquals(0, c.getCentro().getX(), DELTA);
+        assertEquals(10, c.getRaio(), DELTA);
+        assertArrayEquals(new double[] {1, 0.5, 0, 1}, c.getDeformacao(), DELTA);
+        // Cisalhamento puro (det = 1) mantém a área
+        assertEquals(Math.PI * 100, c.calcularArea(), DELTA);
+        // O topo (0, -10) vai para (-5, -10): x' = x + 0.5*y
+        assertTrue(c.contemPonto(-5, -9.9));
+        assertFalse(c.contemPonto(0, -10.5));
+        assertFalse(c.contemPonto(5, -9.9));
+    }
+
+    @Test
+    void perimetroDaElipsePelaAproximacaoDeRamanujan() {
+        Circulo c = new Circulo(new Ponto(0, 0), 1);
+        // Estica 3x em x: elipse de semi-eixos 3 e 1 (escala não uniforme via deformação)
+        c.setDeformacao(new double[] {3, 0, 0, 1});
+        double esperado = Math.PI * (3 * (3 + 1) - Math.sqrt((3 * 3 + 1) * (3 + 3 * 1)));
+        assertEquals(esperado, c.calcularPerimetro(), DELTA);
+        assertEquals(Math.PI * 3, c.calcularArea(), DELTA);
+    }
+
+    @Test
+    void rotacionarElipseGiraOsEixos() {
+        Circulo c = new Circulo(new Ponto(0, 0), 1);
+        c.setDeformacao(new double[] {3, 0, 0, 1});
+        c.rotacionar(Math.PI / 2);
+        // Depois de 90°, o eixo maior fica na vertical
+        assertTrue(c.contemPonto(0, 2.9));
+        assertFalse(c.contemPonto(2.9, 0));
+    }
+
+    @Test
+    void contornoSegueADeformacao() {
+        Circulo c = new Circulo(new Ponto(10, 20), 2);
+        c.cisalhar(1, 0);
+        // t = 90°: (r*cos, r*sin) = (0, 2) -> x = 10 + 1*0 + 1*2 = 12, y = 20 + 2 = 22
+        Ponto p = c.getContorno(4).get(1);
+        assertEquals(12, p.getX(), 1e-9);
+        assertEquals(22, p.getY(), 1e-9);
+    }
+
+    @Test
+    void deformacaoQueAchataAFormaEhRecusada() {
+        Circulo c = new Circulo(new Ponto(0, 0), 1);
+        assertThrows(IllegalArgumentException.class, () -> c.setDeformacao(new double[] {1, 1, 1, 1}));
+        // shx * shy = 1 achataria a forma: o passo é ignorado
+        c.cisalhar(1, 1);
+        assertFalse(c.isDeformado());
     }
 
     @Test

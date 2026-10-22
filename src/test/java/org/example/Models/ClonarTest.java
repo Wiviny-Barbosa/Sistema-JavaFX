@@ -87,4 +87,15 @@ class ClonarTest {
         assertEquals(5, original.getCentro().getX(), DELTA);
         assertEquals(3, original.getRaio(), DELTA);
     }
+
+    @Test
+    void cloneDoCirculoCopiaADeformacaoSemCompartilhar() {
+        Circulo original = new Circulo(new Ponto(5, 5), 3);
+        original.cisalhar(0.5, 0);
+        Circulo copia = (Circulo) original.clonar();
+
+        assertArrayEquals(original.getDeformacao(), copia.getDeformacao(), DELTA);
+        copia.cisalhar(0, 0.5);
+        assertArrayEquals(new double[] {1, 0.5, 0, 1}, original.getDeformacao(), DELTA);
+    }
 }
